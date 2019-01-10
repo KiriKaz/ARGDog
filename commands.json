@@ -1,0 +1,30 @@
+{
+	"Core": [
+		{
+			"command": "help",
+			"aliases": ["help", "commands"],
+			"usage": "help [command]",
+			"description": "List all commands and their categories, or show the usage of one specific command."
+		},
+		{
+			"command": "prefix",
+			"aliases": ["prefix", "pref"],
+			"usage": "prefix $",
+			"description": "Change the prefix used for commands in the server."
+		}
+	],
+	"Ciphers": [
+		{
+			"command": "b64e",
+			"aliases": ["b64e", "base64e", "b64encode", "base64encode"],
+			"usage": "b64e <message to encode>",
+			"description": "Encode a message using base64."
+		},
+		{
+			"command": "b64d",
+			"aliases": ["b64d", "base64d", "b64decode", "base64decode"],
+			"usage": "b64d <b64message> <secondarymessage>",
+			"description": "Decode one or several base64 messages."
+		}
+	]
+}

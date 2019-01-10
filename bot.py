@@ -3,9 +3,14 @@ import asyncio
 import re
 import base64
 import sys
+import json
 from binascii import Error, Incomplete
 
+
 client = discord.Client()
+with open('commands.json', 'r') as data_commands:
+    commands = json.load(data_commands)
+
 
 prefixesf = open('token/guilds', 'r')
 prefixes = prefixesf.read().strip()
@@ -14,7 +19,7 @@ for gset in prefixes:
     print("Guild {}: {}".format(gset[0], gset[1]))
 prefixesf.close()
 prefixes = dict(prefixes)
-print(prefixes)
+
 
 @client.event
 async def on_ready():
@@ -23,6 +28,7 @@ async def on_ready():
     else:
         print('Logged in as {}.'.format(client.user.name))
     print('-'*20)
+
 
 @client.event
 async def on_message(message):
@@ -47,20 +53,35 @@ async def on_message(message):
         if guy == None:
             guy = message.author.name
 
-        if cmd in ('help', 'commands'):
-            title = "**List of Commands**"
-            helpembed = discord.Embed(title=title, type="rich", color=0xffffff)
-            cprefixt = "{0}prefix, {0}pref".format(prfg)
-            cprefixv = "```{0}prefix $```\nChange the prefix used for commands for this server.".format(prfg)
-            helpembed.add_field(name=cprefixt, value=cprefixv, inline=False)
-            cb64et = "{0}b64e, {0}base64e, {0}b64encode, {0}base64encode".format(prfg)
-            cb64ev = "```{0}b64e Super secret message...!```\nEncode a message in base64.".format(prfg)
-            helpembed.add_field(name=cb64et, value=cb64ev, inline=False)
-            cb64dt = "{0}b64d, {0}base64d, {0}b64decode, {0}base64decode".format(prfg)
-            cb64dv = "```{0}b64d aHVudGVyMg==```\nDecode a base64 message.".format(prfg)
-            helpembed.add_field(name=cb64dt, value=cb64dv, inline=False)
-            await client.send_message(message.channel, embed=helpembed)
-        elif cmd in ('prefix', 'pref'):
+        if cmd in commands['Core'][0]['aliases']:
+            if len(msgc) == 1:
+                string = ""
+                string += "```md\n#List of Commands```"
+                string += "\nUse {0}help <command> if you need help about how to use a specific command.\n".format(prfg)
+                i = 1
+                for category in commands:
+                    string += "**{}. {} - **".format(i, category)
+                    i += 1
+                    for command in commands[category]:
+                        string += "`{}` ".format(command['command'])
+                    string +="\n"
+                await client.send_message(message.channel, string)
+            else:
+                # Specifically asked for help for a command. Now... here we go:
+                for category in commands:
+                    for command in commands[category]:
+                        if msgc[1] in command['aliases']:
+                            string = ""
+                            string += "**`{}{}`** __`{}`__\n".format(prfg, command['command'], command['description'])
+                            string += "**Aliases:** "
+                            for alias in command['aliases']:
+                                string += "`{}`, ".format(alias)
+                            string = string[:-2]  # Remove last ", ".
+                            string += "\n\n"
+                            string += "**Usage:** {}{}".format(prfg, command['usage'])
+                            break;
+                await client.send_message(message.channel, string)
+        elif cmd in commands['Core'][1]['aliases']:
             if len(msgc) != 2:
                 await client.send_message(message.channel, 'Please call this command with a one-character argument to set your prefix to.')
                 await client.send_message(message.channel, 'Guild\'s current prefix is: {}'.format(prfg))
@@ -68,7 +89,7 @@ async def on_message(message):
                 prefixes[message.server.id] = msgc[1][0]
                 print("Prefix for {} has been set to \"{}\".".format(message.server.id, msgc[1][0]))
                 await client.send_message(message.channel, 'Guild prefix set to `{}`.'.format(msgc[1][0]))
-        elif cmd in ('b64e', 'base64e', 'b64encode', 'base64encode'):
+        elif cmd in commands['Ciphers'][0]['aliases']:
             if len(msgc) == 1:
                 usage = "{}{} Message to encode here".format(prfg, cmd)
                 await client.send_message(message.channel, 'Usage: `{}`'.format(usage))
@@ -100,7 +121,7 @@ async def on_message(message):
                     title += "**"
                     messager = discord.Embed(title=title, type="rich", description="{}".format(messager), color=0xff0000)
                     await client.send_message(message.channel, embed=messager)
-        elif cmd in ('b64d', 'base64d', 'b64decode', 'base64decode'):
+        elif cmd in commands['Ciphers'][1]['aliases']:
             if len(msgc) == 1:
                 usage = "{}{} base64msg [otherb64msg] [anotherb64msg]".format(prfg, cmd)
                 await client.send_message(message.channel, 'Usage: `{}`'.format(usage))
@@ -142,6 +163,8 @@ async def on_message(message):
                     messager.add_field(name="Message {}".format(i), value="{}".format(calc), inline=False)
                     i += 1
                 await client.send_message(message.channel, embed=messager)
+        # elif cmd in ('binenc', 'bine', 'binarye', 'binaryen', 'binaryenc', 'binaryencode', 'binencode'):
+            # pass
         else:
             await client.send_message(message.channel, "Command not recognized.")
 
@@ -152,6 +175,7 @@ tokenf = open('token/token', 'r')
 token = tokenf.read().strip()
 tokenf.close()
 client.run(token)
+
 
 prefixesf = open('token/guilds', 'w')
 saveStr = ""
