@@ -23,8 +23,20 @@
 		{
 			"command": "b64d",
 			"aliases": ["b64d", "base64d", "b64decode", "base64decode"],
-			"usage": "b64d <b64message> <secondarymessage>",
+			"usage": "b64d <b64message> [secondarymessage]",
 			"description": "Decode one or several base64 messages."
+		},
+		{
+			"command": "binenc",
+			"aliases": ["binenc", "bien", "bienc", "binen", "biencode", "binencode", "binaryen", "binaryencode"],
+			"usage": "binen <message to encode>",
+			"description": "Encode a message using binary."
+		},
+		{
+			"command": "bindec",
+			"aliases": ["bindec", "bidec", "bidecode", "bindecode", "binarydec", "binarydecode"],
+			"usage": "bidec <binary message>",
+			"description": "Decode a binary message."
 		}
 	]
 }

@@ -21,6 +21,10 @@ prefixesf.close()
 prefixes = dict(prefixes)
 
 
+cocmds = commands['Core']
+cicmds = commands['Ciphers']
+
+
 @client.event
 async def on_ready():
     if client.user.name == "ARGDog":
@@ -53,7 +57,7 @@ async def on_message(message):
         if guy == None:
             guy = message.author.name
 
-        if cmd in commands['Core'][0]['aliases']:
+        if cmd in cocmds[0]['aliases']:
             if len(msgc) == 1:
                 string = ""
                 string += "```md\n#List of Commands```"
@@ -68,6 +72,7 @@ async def on_message(message):
                 await client.send_message(message.channel, string)
             else:
                 # Specifically asked for help for a command. Now... here we go:
+                string = None
                 for category in commands:
                     for command in commands[category]:
                         if msgc[1] in command['aliases']:
@@ -79,9 +84,11 @@ async def on_message(message):
                             string = string[:-2]  # Remove last ", ".
                             string += "\n\n"
                             string += "**Usage:** {}{}".format(prfg, command['usage'])
-                            break;
+                            break
+                if string == None:
+                    string = "Sorry, couldn't find that command!"
                 await client.send_message(message.channel, string)
-        elif cmd in commands['Core'][1]['aliases']:
+        elif cmd in cocmds[1]['aliases']:
             if len(msgc) != 2:
                 await client.send_message(message.channel, 'Please call this command with a one-character argument to set your prefix to.')
                 await client.send_message(message.channel, 'Guild\'s current prefix is: {}'.format(prfg))
@@ -89,9 +96,9 @@ async def on_message(message):
                 prefixes[message.server.id] = msgc[1][0]
                 print("Prefix for {} has been set to \"{}\".".format(message.server.id, msgc[1][0]))
                 await client.send_message(message.channel, 'Guild prefix set to `{}`.'.format(msgc[1][0]))
-        elif cmd in commands['Ciphers'][0]['aliases']:
+        elif cmd in cicmds[0]['aliases']:
             if len(msgc) == 1:
-                usage = "{}{} Message to encode here".format(prfg, cmd)
+                usage = "{}{}".format(prfg, cicmds[0]['usage'])
                 await client.send_message(message.channel, 'Usage: `{}`'.format(usage))
             else:
                 del msgc[0]
@@ -121,9 +128,9 @@ async def on_message(message):
                     title += "**"
                     messager = discord.Embed(title=title, type="rich", description="{}".format(messager), color=0xff0000)
                     await client.send_message(message.channel, embed=messager)
-        elif cmd in commands['Ciphers'][1]['aliases']:
+        elif cmd in cicmds[1]['aliases']:
             if len(msgc) == 1:
-                usage = "{}{} base64msg [otherb64msg] [anotherb64msg]".format(prfg, cmd)
+                usage = "{}{}".format(prfg, cicmds[1]['usage'])
                 await client.send_message(message.channel, 'Usage: `{}`'.format(usage))
             else:
                 del msgc[0]
@@ -163,8 +170,79 @@ async def on_message(message):
                     messager.add_field(name="Message {}".format(i), value="{}".format(calc), inline=False)
                     i += 1
                 await client.send_message(message.channel, embed=messager)
-        # elif cmd in ('binenc', 'bine', 'binarye', 'binaryen', 'binaryenc', 'binaryencode', 'binencode'):
-            # pass
+        elif cmd in cicmds[2]['aliases']:
+            if len(msgc) == 1:
+                usage = "{}{}".format(prfg, cicmds[1]['usage'])
+                await client.send_message(message.channel, 'Usage: `{}`'.format(usage))
+            else:
+                del msgc[0]
+                args = ' '.join(msgc)
+                string = ""
+                for character in args:
+                    string += bin(ord(character))[2:].zfill(8) + " "
+                string = string[:-1] # Remove last space. Might be unnecessary..
+                messager = '**Input** ```fix\n{}\n```\n**Output**\n```\n{}\n```'.format(args, string)
+                title = "**Binary encoding for {} ".format(guy)
+                title += "-" * (80 - len(title))
+                title += "**"
+                messager = discord.Embed(title=title, type="rich", description="{}".format(messager), color=0xff8000)
+                await client.send_message(message.channel, embed=messager)
+        elif cmd in cicmds[3]['aliases']:
+            if len(msgc) == 1:
+                usage = "{}{}".format(prfg, cicmds[3]['usage'])
+                await client.send_message(message.channel, 'Usage: `{}`'.format(usage))
+            else:
+                args = False
+                try:
+                    del msgc[0]
+                    string = ""
+                    if len(msgc) == 1:
+                        binary = re.findall('.{8}', msgc[0])
+                        print(binary)
+                        if binary == []:
+                            raise ValueError('string not 8 characters or longer')
+                        for encodedbinary in binary:
+                            string += chr(int(encodedbinary, 2))
+                        messager = '**Input** ```fix\n{}\n```\n**Output**\n```\n{}\n```'.format(msgc[0], string)
+                        title = "**Binary decoding for {} ".format(guy)
+                        title += "-" * (80 - len(title))
+                        title += "**"
+                        messager = discord.Embed(title=title, type="rich", description="{}".format(messager), color=0xff8000)
+                    else:
+                        for binary in msgc:
+                            string += chr(int(binary, 2))
+                        args = ' '.join(msgc)
+                        messager = '**Input** ```fix\n{}\n```\n**Output**\n```\n{}\n```'.format(args, string)
+                        title = "**Binary decoding for {} ".format(guy)
+                        title += "-" * (80 - len(title))
+                        title += "**"
+                        messager = discord.Embed(title=title, type="rich", description="{}".format(messager), color=0xff8000)
+                    await client.send_message(message.channel, embed=messager)
+                except ValueError:
+                    e = sys.exc_info()[1]
+                    if args:
+                        messager = '**Input** ```fix\n{}\n```\nError: `{}`'.format(args, e)
+                    else:
+                        messager = '**Input** ```fix\n{}\n```\nError: `{}`'.format(msgc[0], e)
+                    title = "**Error in binary encoding for {} ".format(guy)
+                    title += "-" * (80 - len(title))
+                    title += "**"
+                    messager = discord.Embed(title=title, type="rich", description="{}".format(messager), color=0xff0000)
+                    await client.send_message(message.channel, embed=messager)
+                    ex = ' '.join(str(e).split()[0:4])
+                    if ex == 'invalid literal for int()':
+                        await client.send_message(message.channel, "You probably didn't use a string of zeroes and ones. Are you sure this is binary?")
+                except:
+                    e = sys.exc_info()[0]
+                    if args:
+                        messager = '**Input** ```fix\n{}\n```\nError: `{}`'.format(args, e)
+                    else:
+                        messager = '**Input** ```fix\n{}\n```\nError: `{}`'.format(msgc[0], e)
+                    title = "**Error in binary encoding for {} ".format(guy)
+                    title += "-" * (80 - len(title))
+                    title += "**"
+                    messager = discord.Embed(title=title, type="rich", description="{}".format(messager), color=0xff0000)
+            
         else:
             await client.send_message(message.channel, "Command not recognized.")
 
