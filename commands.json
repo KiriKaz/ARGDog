@@ -11,6 +11,12 @@
 			"aliases": ["prefix", "pref"],
 			"usage": "prefix $",
 			"description": "Change the prefix used for commands in the server."
+		},
+		{
+			"command": "bugreport",
+			"aliases": ["bugreport", "bug", "report", "dev", "suggest", "complain"],
+			"usage": "bugreport <Complaint, suggestion, report.>",
+			"description": "Submit a complaint, a suggestion or report a bug. Just don't misuse the command."
 		}
 	],
 	"Ciphers": [
@@ -37,6 +43,20 @@
 			"aliases": ["bindec", "bidec", "bidecode", "bindecode", "binarydec", "binarydecode"],
 			"usage": "bidec <binary message>",
 			"description": "Decode a binary message."
+		}
+	],
+	"Bot Admin": [
+		{
+			"command": "ban",
+			"aliases": ["ban"],
+			"usage": "ban <uid>",
+			"description": "Ban user from being able to use the report command."
+		},
+		{
+			"command": "unban",
+			"aliases": ["unban"],
+			"usage": "unban <uid>",
+			"description": "Unban user from being unable to use the report command."
 		}
 	]
 }
